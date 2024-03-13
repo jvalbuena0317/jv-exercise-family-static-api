@@ -25,20 +25,23 @@ class FamilyStructure:
        
 
     def delete_member(self, id):
+        count=0
         for member in self._members:
             if member['id'] == id:
+                count+=1
                 self._members.remove(member)
-                return True
+        if (count>=1):
+                return None
             
-        return False
+        return{"done": True}
 
     def update_member(self, id, member):
         for family_member in self._members:
             if family_member['id'] == id:
-                self._members.remove(member)
+                self._members.remove(family_member)
                 member['id'] = id
                 self._members.append(member)
-                return True 
+                return self._members
         
         return False
 

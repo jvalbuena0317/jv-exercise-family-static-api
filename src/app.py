@@ -14,6 +14,10 @@ CORS(app)
 
 # create the jackson family object
 jackson_family = FamilyStructure("Jackson")
+jackson_family.add_member({"first_name": "John", "age": 33, "lucky_numbers": [7, 13, 22]})
+jackson_family.add_member({"first_name": "Jane", "age": 35, "lucky_numbers": [10, 14, 3]})
+jackson_family.add_member({"first_name": "Jimmy", "age": 5, "lucky_numbers": [1]})
+
 
 # Handle/serialize errors like a JSON object
 @app.errorhandler(APIException)
@@ -26,30 +30,34 @@ def sitemap():
     return generate_sitemap(app)
 
 @app.route('/members', methods=['GET'])
-def handle_hello():
+def get_all_members():
 
     # this is how you can use the Family datastructure by calling its methods
     members = jackson_family.get_all_members()
     response_body = {
-        "hello": "world",
-        "family": members
+        "members": members
     }
 
-
-    return jsonify(response_body), 200
+    return jsonify([response_body]), 200
 
 @app.route('/member' , methods= ['POST'])
 def add_member():
     new_member= request.json
+    if "id" not in new_member:
+        new_member["id"] = jackson_family._generateId()  
     jackson_family.add_member(new_member)
-    return jsonify({"done":"Usuario creado"})
+
+    
+    return jsonify({"done":"member created"})
 
 @app.route('/member/<int:member_id>' , methods= ['DELETE'])
 def delete_family_member(member_id):
     eliminar_familiar= jackson_family.delete_member(member_id)
-    if not eliminar_familiar:
-        return jsonify({'alert': 'family member not found'}), 400
-    return jsonify({'done': 'family member removed'}), 200
+    if eliminar_familiar:
+        return jsonify({'done': 'family member removed'}), 200
+    else:
+        return jsonify({'alert': 'family member not found'}), 404
+    
 
                   
 @app.route('/member/<int:member_id>', methods=['PUT'])
@@ -64,12 +72,15 @@ def update_family_member(member_id):
 # this only runs if `$ python src/app.py` is executed
 
 @app.route('/member/<int:member_id>', methods=['GET'])
-def get_one_member(member_id):
+def get_member(member_id):
     one_member= jackson_family.get_member(member_id)
     if not one_member:
         return jsonify({'msg':'Family member not found'}), 400
     
     return jsonify(one_member) , 200
+
+
+
 
 
 if __name__ == '__main__':
