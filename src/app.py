@@ -14,9 +14,7 @@ CORS(app)
 
 # create the jackson family object
 jackson_family = FamilyStructure("Jackson")
-jackson_family.add_member({"first_name": "John", "age": 33, "lucky_numbers": [7, 13, 22]})
-jackson_family.add_member({"first_name": "Jane", "age": 35, "lucky_numbers": [10, 14, 3]})
-jackson_family.add_member({"first_name": "Jimmy", "age": 5, "lucky_numbers": [1]})
+
 
 
 # Handle/serialize errors like a JSON object
@@ -32,29 +30,43 @@ def sitemap():
 @app.route('/members', methods=['GET'])
 def get_all_members():
 
-    # this is how you can use the Family datastructure by calling its methods
     members = jackson_family.get_all_members()
-    response_body = {
-        "members": members
-    }
+   
 
-    return jsonify([response_body]), 200
+    return jsonify(members), 200
 
 @app.route('/member' , methods= ['POST'])
 def add_member():
-    new_member= request.json
-    if "id" not in new_member:
-        new_member["id"] = jackson_family._generateId()  
-    jackson_family.add_member(new_member)
+    try:
+        first_name=request.json.get("first_name")
+        age=request.json.get("age")
+        lucky_numbers=request.json.get("lucky_numbers")
+        id=request.json.get("id")
 
     
-    return jsonify({"done":"member created"})
+        new_member={
+            "first_name":first_name,
+            "age":age,
+            "id":jackson_family._generateId(),
+            "lucky_numbers":lucky_numbers,
+            "last_name":"Jackson"
+        }
+
+        jackson_family.add_member(new_member)
+
+        return jsonify({"message":"Member added succesfully"}),200
+    
+    except Exception as e:
+        return jsonify({"error": str(e)}),404
+
+    
+   
 
 @app.route('/member/<int:member_id>' , methods= ['DELETE'])
 def delete_family_member(member_id):
     eliminar_familiar= jackson_family.delete_member(member_id)
     if eliminar_familiar:
-        return jsonify({'done': 'family member removed'}), 200
+        return jsonify({'done': 'True'}), 200
     else:
         return jsonify({'alert': 'family member not found'}), 404
     
